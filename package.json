@@ -1,0 +1,35 @@
+{
+  "name": "express-logs-split",
+  "version": "1.0.0",
+  "description": "split logs",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KarenYin0828/express-logs-split.git"
+  },
+  "keywords": [
+    "winston",
+    "express-winston",
+    "split",
+    "logs"
+  ],
+  "author": "karen",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/KarenYin0828/express-logs-split/issues"
+  },
+  "homepage": "https://github.com/KarenYin0828/express-logs-split#readme",
+  "devDependencies": {
+    "mocha": "^3.2.0"
+  },
+  "dependencies": {
+    "express-winston": "^2.2.0",
+    "lodash": "^4.17.4",
+    "moment-timezone": "^0.5.11",
+    "winston": "^2.3.1",
+    "winston-daily-rotate-file": "^1.4.4"
+  }
+}
