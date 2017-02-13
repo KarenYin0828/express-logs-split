@@ -36,7 +36,6 @@ function formatter(formatFn) {
 }
 
 let errorLog = function (req, res, next) {
-    console.log('wrong______________')
     return next();
 };
 
