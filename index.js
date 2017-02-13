@@ -1,5 +1,6 @@
 exports = module.exports = {
-    accessLog: require('./libs/access_log'),
-    errorLog: require('./libs/error_log'),
-    // frameworkLog: require('./libs/framework_log'),
+    initConfig: require('./libs/init').init,
+    accessLog: require('./libs/access_log').accessLog,
+    errorLog: require('./libs/error_log').errorLog,
+    logger: require('./libs/logger'),
 };

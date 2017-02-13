@@ -1,68 +1,71 @@
 // 对输出的日志格式进行规范，分级主要为 error，warn，info， debug
 
 const winston = require('winston');
-const config = require('config');
 const momentTZ = require('moment-timezone');
 const util = require('util');
 const _ = require('lodash');
 
 const DailyRotateFile = require('winston-daily-rotate-file');
 
-function formatter(filename) {
-    filename = (filename && filename.toString()) || ' ';
-    return function (options) {
-        return `${options.timestamp()} - ${winston.config.colorize(options.level)} - ${filename} - ${options.message || ''} ${options.meta && Object.keys(options.meta).length ? util.inspect(options.meta) : ''}`; // eslint-disable-line max-len
-    };
+function _defaultFormatter(options) {
+    return `${options.timestamp()} - ${winston.config.colorize(options.level)} - ${options.message} - ${util.inspect(options.meta)}`;
+}
+function formatter(filePath, formatFn) {
+    return typeof formatFn === 'function'? formatFn : _defaultFormatter;
 }
 
-function timeFormat() {
-    return momentTZ().tz(config.server.timezone).format(config.server.timeFormat); // eslint-disable-line max-len
+function _defaultTimestamp() {
+    return momentTZ().tz('Asia/Shanghai').format('YYYY-MM-DD HH:mm:ss');
 }
 
-// Instantiating own Logger
-function logger(fileName) {
+function timestamp(tmp) {
+    return typeof tmp === 'function' ? tmp : _defaultTimestamp;
+}
+
+function logger(options) {
+    options = options || {};
     // output warn to file framework.error.log.yyyy-mm-dd
     const opts = {
-        colorize: true,
-        json: false,
-        datePattern: '.yyyy-MM-dd',
-        localTime: true,
-        timestamp: timeFormat,
-        formatter: formatter(fileName),
+        colorize: options.colorize || true,
+        json: options.json || false,
+        datePattern: options.datePattern || '.yyyy-MM-dd',
+        localTime: options.localTime || true,
+        timestamp: timestamp(options.timestamp),
+        formatter: formatter(options.formatter)
     };
 
     const transportFileErrorOpt = {
         name: 'file#error',
         level: 'error',
-        filename: `${config.server.logPath}/framework.error.log`,
+        filename: `./logs/framework.error.log`,
     };
 
     // output warn to file framework.warn.log.yyyy-mm-dd
     const transportFileWarnOpt = {
         name: 'file#warn',
         level: 'warn',
-        filename: `${config.server.logPath}/framework.warn.log`,
+        filename: `./logs/framework.warn.log`,
     };
 
     // output info to file framework.info.log.yyyy-mm-dd
     const transportFileInfoOpt = {
         name: 'file#info',
         level: 'info',
-        filename: `${config.server.logPath}/framework.info.log`,
+        filename: `./logs/framework.info.log`,
     };
 
     // output debug to file framework.debug.log.yyyy-mm-dd
     const transportFileDebugOpt = {
         name: 'file#debug',
         level: 'debug',
-        filename: `${config.server.logPath}/framework.debug.log`,
+        filename: `./logs/framework.debug.log`,
     };
 
     // console log
     const transportConsoleOpt = {};
 
     if (process.env.NODE_ENV === 'production') {
-        return new (winston.Logger)({
+        winston.configure({
             levels: {
                 error: 0,
                 warn: 1,
@@ -78,23 +81,17 @@ function logger(fileName) {
             exitOnError: false,
         });
     } else if (process.env.NODE_ENV === 'development') {
-        return new (winston.Logger)({
+        winston.configure({
             transports: [
-                new winston.transports.Console(_.merge(transportConsoleOpt, opts)), // eslint-disable-line max-len
+                new winston.transports.Console(_.merge(transportConsoleOpt, opts)),
             ],
             exitOnError: false,
         });
     } else {
-        // do nothing;
-        return {
-            info: function () {},
-            warn: function () {},
-            error: function () {},
-            debug: function () {}
-        };
+        winston.remove(winston.transports.Console);
     }
 }
 
-module.exports = function (filename) {
-    return logger(filename);
-};
+module.exports = {
+    init: logger,
+}

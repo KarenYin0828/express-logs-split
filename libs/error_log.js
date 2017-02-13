@@ -31,11 +31,16 @@ function _defaultFormatter(options) {
     };
     return util.inspect(error, { depth: 4, color: true });
 }
-function formatter(formatorFn) {
-    return typeof formatorFn === 'function'? formatorFn : _defaultFormatter;
+function formatter(formatFn) {
+    return typeof formatFn === 'function'? formatFn : _defaultFormatter;
 }
-/* istanbul ignore next */
-module.exports = function (opts) {
+
+let errorLog = function (req, res, next) {
+    console.log('wrong______________')
+    return next();
+};
+
+const init = function (opts) {
     opts = opts || {};
 
     const options = {
@@ -54,7 +59,7 @@ module.exports = function (opts) {
         showStack: opts.showStack || true,
         requestWhitelist: opts.requestWhitelist || ['url', 'headers', 'method', 'httpVersion', 'originalUrl', 'ip'], // eslint-disable-line max-len
     };
-    return expressWinston.errorLogger({
+    errorLog = expressWinston.errorLogger({
         winstonInstance: new (winston.Logger)({
             transports: [
                 new DailyRotateFile(options.transportsOpt)
@@ -67,3 +72,8 @@ module.exports = function (opts) {
         requestWhitelist: options.requestWhitelist, // eslint-disable-line max-len
     });
 };
+
+module.exports = {
+    init: init,
+    errorLog: function (req, res, next) { return errorLog },
+}

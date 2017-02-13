@@ -8,46 +8,52 @@ const momentTZ = require('moment-timezone');
 const _ = require('lodash');
 // opts = { json, colorize, datePattern, localTime, filename, timestamp, formatter, meta, expressFormat, requestWhitelist, responseWhitelist}
 
-module.exports = function (opts) {
+function _defaultTimestamp() {
+    return momentTZ().tz('Asia/Shanghai').format('YYYY-MM-DD HH:mm:ss');
+}
+
+function timestamp(tmp) {
+    return typeof tmp === 'function' ? tmp : _defaultTimestamp;
+}
+
+
+function _defaultFormatter(options) {
+    const reqInfo = options.meta.req;
+    const resInfo = options.meta.res;
+    return `date=${options.timestamp()} | ip=${reqInfo.ip} | method=${reqInfo.method} |  url=${reqInfo.url} | status=${resInfo.statusCode} | time=${options.meta.responseTime}ms | bytes=${(resInfo._headers && resInfo._headers['content-length']) || '-'} | referer=${reqInfo.headers.referer || '-'} | user-agent=${reqInfo.headers['user-agent']} | cookie=${reqInfo.headers.cookie || '-'}`;
+}
+function formatter(formatFn) {
+    return typeof formatFn === 'function'? formatFn : _defaultFormatter;
+}
+
+let accessLog = function (req, res, next) {
+    console.log('________access');
+    return next();
+};
+
+const init = function (opts) {
     opts = opts || {};
 
-    delete opts.timestamp;
-
-    // defalt options
-    const defaultOptions = {
-        json: false,
-        colorize: true,
-        datePattern: '.yyyy-MM-dd',
-        localTime: true,
-        filename: `./logs/access.log`,
-        timestamp: function () {
-            return momentTZ().tz(opts.timezone || 'Asia/Shanghai').format(opts.timeFormat || 'YYYY-MM-DD HH:mm:ss');
+    const options = {
+        transportsOpt: {
+            json: opts.json || false,
+            colorize: opts.colorize || true,
+            datePattern: opts.datePattern || '.yyyy-MM-dd',
+            localTime: opts.localTime || true,
+            filename: opts.filename || `./logs/access.log`, // eslint-disable-line
+            timestamp: timestamp(opts.timestamp),
+            formatter: formatter(opts.formatter),
         },
-        formatter: function (options) {
-            const reqInfo = options.meta.req;
-            const resInfo = options.meta.res;
-            return `date=${options.timestamp()} | ip=${reqInfo.ip} | method=${reqInfo.method} |  url=${reqInfo.url} | status=${resInfo.statusCode} | time=${options.meta.responseTime}ms | bytes=${(resInfo._headers && resInfo._headers['content-length']) || '-'} | referer=${reqInfo.headers.referer || '-'} | user-agent=${reqInfo.headers['user-agent']} | cookie=${reqInfo.headers.cookie || '-'}`;
-        },
-        // the follow is express-winston's options, not transports's options
-        meta: true,
-        expressFormat: true,
-        requestWhitelist: ['url', 'headers', 'method', 'httpVersion', 'originalUrl', 'ip'],
-        responseWhitelist: ['statusCode', '_headers'],
+        meta: opts.meta || true,
+        expressFormat: opts.expressFormat || true,
+        requestWhitelist: opts.requestWhitelist || ['url', 'headers', 'method', 'httpVersion', 'originalUrl', 'ip'],
+        responseWhitelist: opts.responseWhitelist || ['statusCode', '_headers'],
     };
-    const options = _.merge(defaultOptions, opts);
 
-    return expressWinston.logger({
+    accessLog = expressWinston.logger({
         winstonInstance: new (winston.Logger)({
             transports: [
-                new DailyRotateFile({
-                    json: options.json,
-                    colorize: options.colorize,
-                    datePattern:options.datePattern,
-                    localTime: options.localTime,
-                    filename: options.filename,
-                    timestamp: options.timestamp,
-                    formatter: options.formatter,
-                })
+                new DailyRotateFile(options.transportsOpt)
             ]
         }),
         meta: options.meta,
@@ -55,4 +61,9 @@ module.exports = function (opts) {
         requestWhitelist: options.requestWhitelist,
         responseWhitelist: options.responseWhitelist,
     });
+};
+
+module.exports = {
+    init: init,
+    accessLog: function (req, res, next) { return accessLog },
 };
