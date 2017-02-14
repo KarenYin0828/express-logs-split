@@ -1,7 +1,7 @@
 {
   "name": "express-logs-split",
-  "version": "1.0.0",
-  "description": "split logs",
+  "version": "0.0.2",
+  "description": "split express logs",
   "main": "index.js",
   "scripts": {
     "test": "test"

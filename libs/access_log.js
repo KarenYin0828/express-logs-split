@@ -6,7 +6,6 @@ const expressWinston = require('express-winston');
 const DailyRotateFile = require('winston-daily-rotate-file');
 const momentTZ = require('moment-timezone');
 const _ = require('lodash');
-// opts = { json, colorize, datePattern, localTime, filename, timestamp, formatter, meta, expressFormat, requestWhitelist, responseWhitelist}
 
 function _defaultTimestamp() {
     return momentTZ().tz('Asia/Shanghai').format('YYYY-MM-DD HH:mm:ss');
@@ -27,39 +26,63 @@ function formatter(formatFn) {
 }
 
 let accessLog = function (req, res, next) {
-    console.log('________access');
     return next();
 };
 
-const init = function (opts) {
-    opts = opts || {};
+const init = function (options) {
+    options = options || {};
 
-    const options = {
+    const opts = {
         transportsOpt: {
-            json: opts.json || false,
-            colorize: opts.colorize || true,
-            datePattern: opts.datePattern || '.yyyy-MM-dd',
-            localTime: opts.localTime || true,
-            filename: opts.filename || `./logs/access.log`, // eslint-disable-line
-            timestamp: timestamp(opts.timestamp),
-            formatter: formatter(opts.formatter),
+            json: false,
+            colorize: options.colorize || true,
+            datePattern: options.datePattern || '.yyyy-MM-dd',
+            localTime: options.localTime || true,
+            filename: options.filename || './logs/access.log', // eslint-disable-line
+            timestamp: timestamp(options.timestamp),
+            formatter: formatter(options.formatter),
+            label: options.label,
+            prettyPrint: options.prettyPrint,
+            showLevel: options.showLevel,
+            maxFile: options.maxFiles,
+            logstash: options.logstash,
+            maxsize: options.maxsize,
+            zippedArchive: options.zippedArchive,
+            prepend: options.prepend,
+            maxRetries: options.maxRetries,
+            depth: options.depth,
         },
-        meta: opts.meta || true,
-        expressFormat: opts.expressFormat || true,
-        requestWhitelist: opts.requestWhitelist || ['url', 'headers', 'method', 'httpVersion', 'originalUrl', 'ip'],
-        responseWhitelist: opts.responseWhitelist || ['statusCode', '_headers'],
+        meta: options.meta || true,
+        expressFormat: options.expressFormat || true,
+        requestWhitelist: options.requestWhitelist || ['url', 'headers', 'method', 'httpVersion', 'originalUrl', 'ip'],
+        responseWhitelist: options.responseWhitelist || ['statusCode', '_headers'],
     };
 
     accessLog = expressWinston.logger({
-        winstonInstance: new (winston.Logger)({
+        winstonInstance: options.winstonInstance || (new (winston.Logger)({
             transports: [
-                new DailyRotateFile(options.transportsOpt)
+                new DailyRotateFile(opts.transportsOpt)
             ]
-        }),
-        meta: options.meta,
+        })),
+        meta: opts.meta,
+        expressFormat: opts.expressFormat,
+        requestWhitelist: opts.requestWhitelist,
+        responseWhitelist: opts.responseWhitelist,
+        bodyWhitelist: options.bodyWhitelist,
+        bodyBlacklist: options.bodyBlacklist,
+        requestFilter: options.requestFilter,
+        responseFilter: options.responseFilter,
+        ignoredRoutes: options.ignoredRoutes,
+        level: options.level || 'info',
+        statusLevels: options.statusLevels,
+        msg: options.msg,
+        baseMeta: options.baseMeta,
+        metaField: options.metaField,
+        colorize: options.colorize,
         expressFormat: options.expressFormat,
-        requestWhitelist: options.requestWhitelist,
-        responseWhitelist: options.responseWhitelist,
+        ignoreRoute: options.ignoreRoute,
+        skip: options.skip,
+        dynamicMeta: options.dynamicMeta,
     });
 };
 

@@ -35,44 +35,107 @@ function formatter(formatFn) {
     return typeof formatFn === 'function'? formatFn : _defaultFormatter;
 }
 
-let errorLog = function (req, res, next) {
-    return next();
+
+// 自定义错误对象 level: myerror
+let customErrorFun = function (err, req, res, next) {
+    return next(err);
+}
+
+let officalErrorFun = function (err, req, res, next) {
+    return next(err);
 };
 
-const init = function (opts) {
-    opts = opts || {};
+let errorLog = function (err, req, res, next) {
+    if (err.name === 'Error') {
+        officalErrorFun(err, req, res, next);
+    } else {
+        customErrorFun(err, req, res, next);
+    }
+};
 
-    const options = {
+const init = function (options) {
+    options = options || {};
+
+    const opts = {
         transportsOpt: {
-            json: opts.json || false,
-            colorize: opts.colorize || true,
-            datePattern: opts.datePattern || '.yyyy-MM-dd',
-            localTime: opts.localTime || true,
-            filename: opts.filename || `./logs/error.log`, // eslint-disable-line
-            timestamp: timestamp(opts.timestamp),
-            formatter: formatter(opts.formatter),
+            json: false,
+            colorize: options.colorize || true,
+            datePattern: options.datePattern || '.yyyy-MM-dd',
+            localTime: options.localTime || true,
+            level: 'error',
+            filename: options.filename || `./logs/error.log`,
+            timestamp: timestamp(options.timestamp),
+            formatter: formatter(options.formatter),
+            label: options.label,
+            prettyPrint: options.prettyPrint,
+            showLevel: options.showLevel,
+            maxFile: options.maxFiles,
+            logstash: options.logstash,
+            maxsize: options.maxsize,
+            zippedArchive: options.zippedArchive,
+            prepend: options.prepend,
+            maxRetries: options.maxRetries,
+            depth: options.depth,
         },
-        meta: opts.meta || true,
-        expressFormat: opts.expressFormat || true,
-        dumpExceptions: opts.dumpExceptions || true,
-        showStack: opts.showStack || true,
-        requestWhitelist: opts.requestWhitelist || ['url', 'headers', 'method', 'httpVersion', 'originalUrl', 'ip'], // eslint-disable-line max-len
+        meta: options.meta || true,
+        expressFormat: options.expressFormat || true,
+        dumpExceptions: options.dumpExceptions || true,
+        showStack: options.showStack || true,
+        requestWhitelist: options.requestWhitelist || ['url', 'headers', 'method', 'httpVersion', 'originalUrl', 'ip'],
     };
-    errorLog = expressWinston.errorLogger({
-        winstonInstance: new (winston.Logger)({
+    const customErrorOpts = {
+        customError: options.customError, // true or false
+        errname: options.customErrorName,
+        winstonInstance: options.customErrorwinstonInstance,
+        filename: options.customErrorFilename,
+    }
+
+    officalErrorFun = expressWinston.errorLogger({
+        winstonInstance: options.winstonInstance || (new (winston.Logger)({
             transports: [
-                new DailyRotateFile(options.transportsOpt)
+                new DailyRotateFile(opts.transportsOpt)
             ]
-        }),
-        meta: options.meta,
-        expressFormat: options.expressFormat,
-        dumpExceptions: options.dumpExceptions,
-        showStack: options.showStack,
-        requestWhitelist: options.requestWhitelist, // eslint-disable-line max-len
+        })),
+        meta: opts.meta,
+        expressFormat: opts.expressFormat,
+        dumpExceptions: opts.dumpExceptions,
+        showStack: opts.showStack,
+        level: 'error',
+        requestWhitelist: opts.requestWhitelist,
     });
+
+    if (customErrorOpts.customError) {
+        // 初始化 myerror
+        require('./custom_error').initCustomError(customErrorOpts.errname);
+
+        const transOpt = opts.transportsOpt;
+        const customLevel = customErrorOpts.errorname || 'myerror';
+
+        transOpt.filename = customErrorOpts.customErrorFilename|| './logs/myerror.log';
+        transOpt.level = customLevel;
+
+        // 自定义 logge levels
+        const levels = { error: 0 };
+        levels[customLevel] = 1;
+
+        customErrorFun = expressWinston.errorLogger({
+            winstonInstance: customErrorOpts.winstonInstance || (new (winston.Logger)({
+                levels: levels,
+                transports: [
+                    new DailyRotateFile(transOpt)
+                ]
+            })),
+            meta: opts.meta,
+            expressFormat: opts.expressFormat,
+            dumpExceptions: opts.dumpExceptions,
+            showStack: opts.showStack,
+            level:  customErrorOpts.errorname || 'myerror',
+            requestWhitelist: opts.requestWhitelist,
+        });
+    }
 };
 
 module.exports = {
     init: init,
-    errorLog: function (req, res, next) { return errorLog },
+    errorLog: function () { return errorLog },
 }
