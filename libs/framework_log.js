@@ -24,47 +24,57 @@ function timestamp(tmp) {
 
 function logger(options) {
     options = options || {};
-    // output warn to file framework.error.log.yyyy-mm-dd
     const opts = {
         colorize: options.colorize || true,
-        json: options.json || false,
+        json: false,
         datePattern: options.datePattern || '.yyyy-MM-dd',
         localTime: options.localTime || true,
         timestamp: timestamp(options.timestamp),
-        formatter: formatter(options.formatter)
+        formatter: formatter(options.formatter),
+        label: options.label,
+        prettyPrint: options.prettyPrint,
+        showLevel: options.showLevel,
+        maxFile: options.maxFiles,
+        logstash: options.logstash,
+        maxsize: options.maxsize,
+        zippedArchive: options.zippedArchive,
+        prepend: options.prepend,
+        maxRetries: options.maxRetries,
+        depth: options.depth,
+
     };
 
     const transportFileErrorOpt = {
         name: 'file#error',
         level: 'error',
-        filename: `./logs/framework.error.log`,
+        filename: options.errorFilename || `./logs/framework.error.log`,
     };
 
     // output warn to file framework.warn.log.yyyy-mm-dd
     const transportFileWarnOpt = {
         name: 'file#warn',
         level: 'warn',
-        filename: `./logs/framework.warn.log`,
+        filename:  options.warnFilename || `./logs/framework.warn.log`,
     };
 
     // output info to file framework.info.log.yyyy-mm-dd
     const transportFileInfoOpt = {
         name: 'file#info',
         level: 'info',
-        filename: `./logs/framework.info.log`,
+        filename:  options.infoFilename || `./logs/framework.info.log`,
     };
 
     // output debug to file framework.debug.log.yyyy-mm-dd
     const transportFileDebugOpt = {
         name: 'file#debug',
         level: 'debug',
-        filename: `./logs/framework.debug.log`,
+        filename:  options.debugFilename || `./logs/framework.debug.log`,
     };
 
     // console log
     const transportConsoleOpt = {};
 
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV ===( options.productionName || 'production')) {
         winston.configure({
             levels: {
                 error: 0,
@@ -80,7 +90,7 @@ function logger(options) {
             ],
             exitOnError: false,
         });
-    } else if (process.env.NODE_ENV === 'development') {
+    } else if (process.env.NODE_ENV === (options.developmentName || 'development')) {
         winston.configure({
             transports: [
                 new winston.transports.Console(_.merge(transportConsoleOpt, opts)),
@@ -89,6 +99,7 @@ function logger(options) {
         });
     } else {
         winston.remove(winston.transports.Console);
+        winston.remove(winston.transports.File);
     }
 }
 
