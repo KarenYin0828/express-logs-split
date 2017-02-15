@@ -31,7 +31,6 @@ let accessLog = function (req, res, next) {
 
 const init = function (options) {
     options = options || {};
-
     const opts = {
         transportsOpt: {
             json: false,
@@ -44,7 +43,7 @@ const init = function (options) {
             label: options.label,
             prettyPrint: options.prettyPrint,
             showLevel: options.showLevel,
-            maxFile: options.maxFiles,
+            maxFiles: options.maxFiles,
             logstash: options.logstash,
             maxsize: options.maxsize,
             zippedArchive: options.zippedArchive,

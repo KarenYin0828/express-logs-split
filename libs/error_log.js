@@ -69,7 +69,7 @@ const init = function (options) {
             label: options.label,
             prettyPrint: options.prettyPrint,
             showLevel: options.showLevel,
-            maxFile: options.maxFiles,
+            maxFiles: options.maxFiles,
             logstash: options.logstash,
             maxsize: options.maxsize,
             zippedArchive: options.zippedArchive,
