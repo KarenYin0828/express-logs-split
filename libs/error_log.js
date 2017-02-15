@@ -111,7 +111,7 @@ const init = function (options) {
         const transOpt = opts.transportsOpt;
         const customLevel = customErrorOpts.errorname || 'myerror';
 
-        transOpt.filename = customErrorOpts.customErrorFilename|| './logs/myerror.log';
+        transOpt.filename = customErrorOpts.filename|| './logs/myerror.log';
         transOpt.level = customLevel;
 
         // 自定义 logge levels

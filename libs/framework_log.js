@@ -74,7 +74,7 @@ function logger(options) {
     // console log
     const transportConsoleOpt = {};
 
-    if (process.env.NODE_ENV ===( options.productionName || 'production')) {
+    if (process.env.NODE_ENV === options.productionName) {
         winston.configure({
             levels: {
                 error: 0,
@@ -90,7 +90,7 @@ function logger(options) {
             ],
             exitOnError: false,
         });
-    } else if (process.env.NODE_ENV === (options.developmentName || 'development')) {
+    } else if (process.env.NODE_ENV === options.developmentName) {
         winston.configure({
             transports: [
                 new winston.transports.Console(_.merge(transportConsoleOpt, opts)),
