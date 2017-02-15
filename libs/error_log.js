@@ -31,10 +31,10 @@ function _defaultFormatter(options) {
     };
     return util.inspect(error, { depth: 4, color: true });
 }
+
 function formatter(formatFn) {
     return typeof formatFn === 'function'? formatFn : _defaultFormatter;
 }
-
 
 // 自定义错误对象 level: myerror
 let customErrorFun = function (err, req, res, next) {
@@ -46,7 +46,7 @@ let officalErrorFun = function (err, req, res, next) {
 };
 
 let errorLog = function (err, req, res, next) {
-    if (err.name === 'Error') {
+    if (['SyntaxError', 'ReferenceError', 'RangeError', 'TypeError', 'URIError', 'EvalError', 'Error'].indexOf(err.name) !== -1) {
         officalErrorFun(err, req, res, next);
     } else {
         customErrorFun(err, req, res, next);
