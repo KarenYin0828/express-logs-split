@@ -16,36 +16,38 @@ var { accessLog, errorLog, logger, initConfig } = require('express-logs-split');
 // init config
 initConfig({
     accessOptions: {
-        filename: './access.log', // default: ./logs/access.log,
+        filename: './access.log', // access.log打印文件位置
+        maxFile: 3, // 保存最近三天的文件
     },
     errorOptions: {
-        customError: true, // if you want custom error
-        customErrorName: 'myeror',
-        customErrorFilename: './myerror.log',
+        maxFile: 3, // 保存最近三天的文件
+        customError: true, // 是否进行自定义错误。
+        customErrorName: 'myeror', // 自定义错误的名称。默认是MyError
+        customErrorFilename: './myerror.log', // 自定义错误的日志打印位置
     },
     frameworkOptions: {
-        developmentName: 'dev', // default is development
-        productionName: 'proc', // default is production
-        errorFilename: './framework.error.log', // default is ./logs/framework.error.log
-        warnFilename: './framework.warn.log', // default is ./logs/framework.warn.log
-        infoFilename: './framework.info.log', // default is ./logs/framework.info.log
-        debugFilename: './framework.debug.log', // default is ./logs/framework.debug.log
-        datePattern: options.datePattern || '.yyyy-MM-dd',
-        localTime: true,
-        maxFile: 3,
+        developmentName: 'dev', // 项目开发环境名。默认是 development
+        productionName: 'proc', // 项目生产环境名。默认是 production
+        errorFilename: './framework.error.log', // logger.error 输出信息的打印位置。默认是 ./logs/framework.error.log
+        warnFilename: './framework.warn.log', // 默认是 ./logs/framework.warn.log
+        infoFilename: './framework.info.log', // 默认是 ./logs/framework.info.log
+        debugFilename: './framework.debug.log', // 默认是 ./logs/framework.debug.log
+        datePattern: datePattern, // 日志后缀格式。默认是 .yyyy-MM-dd. e.g: access.log.2017.02.12
+        localTime: true, // 是否使用本地时区
+        maxFile: 3, // 保存最近三天的文件
         prepend: false,
     },
 });
 
 if (isProduction）{
-    // production env
+    // 生产环境
     app.use(accessLog());
 }
 
 ...
 
 if (isProduction) {
-    // production env
+    // 生产环境。errorLog必须放在错误处理函数之前。
     app.use(errorLog());
 }
 app.use(function (err, req, res, next) {
@@ -58,7 +60,7 @@ app.use(function (err, req, res, next) {
 
 ```
 // test.js
-var logger = require('express-logs-split').logger('/app/test.js');
+var logger = require('express-logs-split').logger(__filename);
 
 logger.info('this is a test');
 
@@ -70,8 +72,8 @@ logger.info('this is a test');
 // init config
 initConfig();
 
-// custom error
-var MyError = require('express-logs-split/libs/cuserr');
+// 自定义错误
+var MyError = require('express-logs-split/libs/customError');
 
 app.get('/customerror', function (req, res, next) => {
     return next(new MyError('404'));
