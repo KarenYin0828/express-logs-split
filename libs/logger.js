@@ -8,7 +8,7 @@ const _getFilePath = function (filePath) {
     // 方便日志打印文件名
     // eg: E:\Works\fe\zixun\server\proxys\base.js
     // return server/proxys/base.js
-    return typeof filePath === 'string' ? filename.split(path.sep).slice(-3).join('/') : '';
+    return typeof filePath === 'string' ? filePath.split(path.sep).slice(-3).join('/') : '';
 };
 
 const originalMethod = {
