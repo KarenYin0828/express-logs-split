@@ -1,5 +1,15 @@
 const logger = require('winston');
+const path = require('path');
+
 const defaultFn = function () {};
+
+const _getFilePath = function (filePath) {
+    // 对当前路径进行处理
+    // 方便日志打印文件名
+    // eg: E:\Works\fe\zixun\server\proxys\base.js
+    // return server/proxys/base.js
+    return typeof filePath === 'string' ? filename.split(path.sep).slice(-3).join('/') : '';
+};
 
 const originalMethod = {
     errorMethod: logger.error || defaultFn,
@@ -36,5 +46,6 @@ function Logger(filePath) {
 }
 
 module.exports = function (filePath) {
+    filePath = _getFilePath(filePath);
     return new Logger(filePath);
 }
