@@ -15,26 +15,26 @@ var { accessLog, errorLog, logger, initConfig } = require('express-logs-split');
 
 // init config
 initConfig({
+    developmentName: 'dev', // 项目开发环境名。默认是 development
+    productionName: 'proc', // 项目生产环境名。默认是 production
     accessOptions: {
         filename: './access.log', // access.log打印文件位置
-        maxFile: 3, // 保存最近三天的文件
+        maxFiles: 3, // 保存最近三天的文件
     },
     errorOptions: {
-        maxFile: 3, // 保存最近三天的文件
+        maxFiles: 3, // 保存最近三天的文件
         customError: true, // 是否进行自定义错误。
         customErrorName: 'myeror', // 自定义错误的名称。默认是MyError
         customErrorFilename: './myerror.log', // 自定义错误的日志打印位置
     },
     frameworkOptions: {
-        developmentName: 'dev', // 项目开发环境名。默认是 development
-        productionName: 'proc', // 项目生产环境名。默认是 production
         errorFilename: './framework.error.log', // logger.error 输出信息的打印位置。默认是 ./logs/framework.error.log
         warnFilename: './framework.warn.log', // 默认是 ./logs/framework.warn.log
         infoFilename: './framework.info.log', // 默认是 ./logs/framework.info.log
         debugFilename: './framework.debug.log', // 默认是 ./logs/framework.debug.log
         datePattern: datePattern, // 日志后缀格式。默认是 .yyyy-MM-dd. e.g: access.log.2017.02.12
         localTime: true, // 是否使用本地时区
-        maxFile: 3, // 保存最近三天的文件
+        maxFiles: 3, // 保存最近三天的文件
         prepend: false,
     },
 });
