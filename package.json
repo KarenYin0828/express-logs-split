@@ -1,6 +1,6 @@
 {
   "name": "express-logs-split",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "split express logs",
   "main": "index.js",
   "scripts": {
@@ -17,7 +17,7 @@
     "logs"
   ],
   "author": "karen",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/KarenYin0828/express-logs-split/issues"
   },
